@@ -3,7 +3,7 @@ import cv2 as cv
 import glob
 
 chessboardSize = (8,5)
-frameSize = (4032, 2268)
+frameSize = (2560, 1440)
 
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -16,7 +16,7 @@ objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
-images = glob.glob('*.jpg')
+images = glob.glob('chessboard_imgs/*.jpg')
 for fname in images:
     print(fname)
     img = cv.imread(fname)
@@ -32,7 +32,12 @@ for fname in images:
         imgpoints.append(corners)
         # Draw and display the corners
         cv.drawChessboardCorners(img, chessboardSize, corners2, ret)
-        cv.imshow('img', img)
+        scale=50
+        height = int(img.shape[0] * scale / 100)
+        width=int(img.shape[1]*scale/100)
+        dim=(width,height)
+        resized=cv.resize(img,dim,interpolation=cv.INTER_AREA)
+        cv.imshow('img', resized)
         cv.waitKey(1000)
 
 cv.destroyAllWindows()
@@ -45,7 +50,7 @@ print("\nDistortion Parameters: \n", dist)
 print("\nRotation Vectors: \n", rvecs)
 print("\nTranslation Vectors: \n", tvecs)
 
-img = cv.imread('20230307_084442.jpg')
+img = cv.imread('chessboard_imgs/20230307_111004.jpg')
 h,  w = img.shape[:2]
 newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
 
