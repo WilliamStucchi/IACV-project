@@ -5,44 +5,55 @@ import matplotlib.image as mpimg
 
 class CameraCalibration():
 
-    def __init__(self, image_dir, nx, ny):
+    def __init__(self, image_dir, nx, ny, debug):
         """ Init CameraCalibration.
         Parameters:
             image_dir (str): path to folder contains chessboard images
             nx (int): width of chessboard (number of squares)
             ny (int): height of chessboard (number of squares)
         """
-        fnames = glob.glob("{}/*".format(image_dir))
-        objpoints = []
-        imgpoints = []
+        if not debug:
+            fnames = glob.glob("{}/*".format(image_dir))
+            objpoints = []
+            imgpoints = []
 
-        # Coordinates of chessboard's corners in 3D
-        objp = np.zeros((nx * ny, 3), np.float32)
-        objp[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
+            # Coordinates of chessboard's corners in 3D
+            objp = np.zeros((nx * ny, 3), np.float32)
+            objp[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
 
-        # Go through all chessboard images
-        for f in fnames:
-            img = mpimg.imread(f)
+            # Go through all chessboard images
+            for f in fnames:
+                img = mpimg.imread(f)
 
-            # Convert to grayscale image
-            gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+                # Convert to grayscale image
+                gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-            # Find chessboard corners
-            ret, corners = cv2.findChessboardCorners(img, (nx, ny))
-            if ret:
-                imgpoints.append(corners)
-                objpoints.append(objp)
+                # Find chessboard corners
+                ret, corners = cv2.findChessboardCorners(img, (nx, ny))
+                if ret:
+                    imgpoints.append(corners)
+                    objpoints.append(objp)
 
-        shape = (img.shape[1], img.shape[0])
-        ret, self.mtx, self.dist, _, _ = cv2.calibrateCamera(objpoints, imgpoints, shape, None, None)
-        print("fammoca")
-        if not ret:
-            raise Exception("Unable to calibrate camera")
+            shape = (img.shape[1], img.shape[0])
+            ret, self.mtx, self.dist, _, _ = cv2.calibrateCamera(objpoints, imgpoints, shape, None, None)
+            print(self.mtx)
+            print(self.dist)
+            if not ret:
+                raise Exception("Unable to calibrate camera")
 
-    def undistort(self, img):
+    def undistort(self, img, debug):
         # Convert to grayscale image
-        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        return cv2.undistort(img, self.mtx, self.dist, None, self.mtx)
+
+        if not debug:
+            gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+            return cv2.undistort(img, self.mtx, self.dist, None, self.mtx)
+
+        mtx = np.matrix([[1980.87395, 0, 1292.38594],
+               [0, 1975.79294, 719.506143],
+               [0,          0,          1]])
+        dist = np.array([0.442880152, -3.00957728, 0.00301437425, 0.000303952355, 6.71664977])
+        return cv2.undistort(img, mtx, dist, None, mtx)
+
 
     """
         chessboardSize = (7, 7)
