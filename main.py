@@ -47,7 +47,7 @@ transform = PerspectiveTransformation()
 lanelines = LaneLines()
 
 # read video from file
-cap = cv2.VideoCapture('../video//20230303_151722.mp4')
+cap = cv2.VideoCapture('../video//20230317_151040.mp4')
 
 video_fps = cap.get(cv2.CAP_PROP_FPS)
 total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -69,22 +69,37 @@ while (cap.isOpened()):
     if ret == True:
         # Display the resulting frame
         img = cv2.resize(frame, (1280, 720))
+        out_img = np.copy(img)
+
+        debug = False
+        final = True
+        if debug:
+            cv2.line(img, (0, 720), (400, 520), (0, 0, 255), 8) # bot-lef to top-lef
+            cv2.line(img, (0, 720), (1280, 720), (0, 0, 255), 8) # bot-lef to bot-rig
+            cv2.line(img, (1280, 720), (880, 520), (0, 0, 255), 8) # bot-rig to top-rig
+            cv2.line(img, (880, 520), (400, 520), (0, 0, 255), 8) # top-rig to top-lef
+
+
         img = calibration.undistort(img, True)
         img = transform.forward(img)
         img = thresholding.forward(img)
         img = lanelines.forward(img)
         img = transform.backward(img)
-        """
-        cv2.line(img, (100, 720), (450, 460), (0, 0, 255), 8)
-        cv2.line(img, (100, 720), (1200, 720), (0, 0, 255), 8)
-        cv2.line(img, (1200, 720), (770, 460), (0, 0, 255), 8)
-        cv2.line(img, (770, 460), (450, 460), (0, 0, 255), 8)
-        """
+
         scale = 80
-        height = int(img.shape[0] * scale / 100)
-        width = int(img.shape[1] * scale / 100)
-        dim = (width, height)
-        resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+        if not final:
+            height = int(img.shape[0] * scale / 100)
+            width = int(img.shape[1] * scale / 100)
+            dim = (width, height)
+            resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+        else:
+            out_img = cv2.addWeighted(out_img, 1, img, 0.6, 0)
+            out_img = lanelines.plot(out_img)
+            height = int(out_img.shape[0] * scale / 100)
+            width = int(out_img.shape[1] * scale / 100)
+            dim = (width, height)
+            resized = cv2.resize(out_img, dim, interpolation=cv2.INTER_AREA)
+
         cv2.imshow('img', resized)
         cv2.setMouseCallback('img', click_event)
         # Press Q on keyboard to exit

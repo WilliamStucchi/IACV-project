@@ -48,10 +48,18 @@ class CameraCalibration():
             gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
             return cv2.undistort(img, self.mtx, self.dist, None, self.mtx)
 
+        """
+        #scacco.it
         mtx = np.matrix([[1980.87395, 0, 1292.38594],
                [0, 1975.79294, 719.506143],
                [0,          0,          1]])
         dist = np.array([0.442880152, -3.00957728, 0.00301437425, 0.000303952355, 6.71664977])
+        """
+        #chessboard
+        mtx = np.matrix([[2060.48005, 0, 1237.43623],
+                         [0, 2053.87150, 695.490058],
+                         [0, 0, 1]])
+        dist = np.array([0.412293769, -3.19040114, -0.00149741508, -0.013392118, 6.78623286])
         return cv2.undistort(img, mtx, dist, None, mtx)
 
 

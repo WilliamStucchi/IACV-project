@@ -257,7 +257,7 @@ class LaneLines:
 
     def measure_curvature(self):
         ym = 30 / 720
-        xm = 3.7 / 700
+        xm = 3 / 700 # 3m width of the road lane
 
         left_fit = self.left_fit.copy()
         right_fit = self.right_fit.copy()

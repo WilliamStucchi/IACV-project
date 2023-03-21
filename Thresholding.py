@@ -38,12 +38,12 @@ class Thresholding:
         v_channel = hsv[:, :, 2]
 
         right_lane = threshold_rel(l_channel, 0.8, 1.0)
-        right_lane[:, :750] = 0
+        right_lane[:, :640] = 0
 
         #left_lane = threshold_abs(l_channel, 20, 75)
         left_lane = threshold_rel(v_channel, 0.7, 1.0)
-        left_lane[:, 550:] = 0
-
+        left_lane[:, 640:] = 0
+        #img2 = l_channel
         img2 = left_lane | right_lane
 
         return img2
