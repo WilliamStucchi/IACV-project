@@ -17,6 +17,39 @@ class LaneLines:
         debug (boolean): Flag for debug/normal mode
     """
 
+    car_offset = 0
+    XLT = 0
+    XRT = 0
+    XLB = 0
+    XRB = 0
+
+    def setCarOffset(self, offset):
+        self.car_offset = offset * 700 / 3
+        #print(self.car_offset)
+
+    def getCarOffset(self):
+        return int(self.car_offset)
+
+    def setXLXRTop(self, xl, xr):
+        self.XLT = xl
+        self.XRT = xr
+
+    def getXLTop(self):
+        return int(self.XLT)
+
+    def getXRTop(self):
+        return int(self.XRT)
+
+    def setXLXRBot(self, xl, xr):
+        self.XLB = xl
+        self.XRB = xr
+
+    def getXLBot(self):
+        return int(self.XLB)
+
+    def getXRBot(self):
+        return int(self.XRB)
+
     def __init__(self):
         """Init Lanelines.
         Parameters:
@@ -173,12 +206,28 @@ class LaneLines:
         left_fitx = self.left_fit[0] * ploty ** 2 + self.left_fit[1] * ploty + self.left_fit[2]
         right_fitx = self.right_fit[0] * ploty ** 2 + self.right_fit[1] * ploty + self.right_fit[2]
 
+        """center = (int(right_fitx[0]), 0)
+        out_img = cv2.circle(out_img, center, 30, (0, 255, 0), 12)
+        center = (int(right_fitx[len(right_fitx) - 1]), 720)
+        out_img = cv2.circle(out_img, center, 30, (0, 255, 0), 12)
+        center = (int(left_fitx[0]), 0)
+        out_img = cv2.circle(out_img, center, 30, (0, 255, 0), 12)
+        center = (int(left_fitx[len(left_fitx) - 1]), 720)
+        out_img = cv2.circle(out_img, center, 10, (0, 255, 0), 12)"""
+
         # Visualization
         for i, y in enumerate(ploty):
             l = int(left_fitx[i])
             r = int(right_fitx[i])
             y = int(y)
-            cv2.line(out_img, (l, y), (r, y), (0, 255, 0))
+
+            """if i == 0:
+                print("l: " + str(l) + " r: " + str(r) + " y: " + str(y) + " len: " + str(len(left_fitx)))"""
+
+            cv2.line(out_img, (l, y), (r, y), (255, 0, 0))
+
+        self.setXLXRTop(left_fitx[0], right_fitx[0])
+        self.setXLXRBot(left_fitx[len(left_fitx) - 1], right_fitx[len(right_fitx) - 1])
 
         lR, rR, pos = self.measure_curvature()
 
@@ -249,7 +298,7 @@ class LaneLines:
             "Vehicle is {:.2f} m away from center".format(pos),
             org=(10, 450),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=0.66,
+            fontScale=0.6,
             color=(255, 255, 255),
             thickness=2)
 
@@ -270,4 +319,6 @@ class LaneLines:
         xl = np.dot(self.left_fit, [700 ** 2, 700, 1])
         xr = np.dot(self.right_fit, [700 ** 2, 700, 1])
         pos = (1280 // 2 - (xl + xr) // 2) * xm
+        self.setCarOffset(pos)
+
         return left_curveR, right_curveR, pos
