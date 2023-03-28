@@ -20,17 +20,6 @@ class PerspectiveTransformation:
     x_top_left = 400
     x_top_right = 880
 
-    def reBox(self, XLB, XLT, XRB, XRT): # if we want to consider the lines positions
-        self.x_bot_left = XLB[0][0] - 20 if 0 <= XLB[0][0] - 20 else 0
-        self.x_bot_right = XRB[0][0] + 20 if XRB[0][0] + 20 <= 1280 else 1280
-        self.x_top_left = XLT[0][0] - 20 if 0 <= XLT[0][0] - 20 else 0
-        self.x_top_right = XRT[0][0] + 20 if XRT[0][0] + 20 <= 1280 else 1280
-
-        self.src = np.float32([(self.x_top_left, self.y_top),  # top-left
-                               (self.x_bot_left, self.y_bottom),  # bottom-left
-                               (self.x_bot_right, self.y_bottom),  # bottom-right
-                               (self.x_top_right, self.y_top)])  # top-right
-
     def __init__(self):
         """Init PerspectiveTransformation."""
         self.src = np.float32([(self.x_top_left, self.y_top),  # top-left
@@ -44,6 +33,35 @@ class PerspectiveTransformation:
                                (1280, 0)])
         self.computeM()
         self.computeMinv()
+
+    def getYBottom(self):
+        return self.y_bottom
+
+    def getYTop(self):
+        return self.y_top
+
+    def getXBotLeft(self):
+        return self.x_bot_left
+
+    def getXBotRight(self):
+        return self.x_bot_right
+
+    def getXTopLeft(self):
+        return self.x_top_left
+
+    def getXTopRight(self):
+        return self.x_top_right
+
+    def reBox(self, XLB, XLT, XRB, XRT): # if we want to consider the lines positions
+        self.x_bot_left = XLB[0][0] - 20 if 0 <= XLB[0][0] - 20 else 0
+        self.x_bot_right = XRB[0][0] + 20 if XRB[0][0] + 20 <= 1280 else 1280
+        self.x_top_left = XLT[0][0] - 20 if 0 <= XLT[0][0] - 20 else 0
+        self.x_top_right = XRT[0][0] + 20 if XRT[0][0] + 20 <= 1280 else 1280
+
+        self.src = np.float32([(self.x_top_left, self.y_top),  # top-left
+                               (self.x_bot_left, self.y_bottom),  # bottom-left
+                               (self.x_bot_right, self.y_bottom),  # bottom-right
+                               (self.x_top_right, self.y_top)])  # top-right
 
     def computeM(self):
         #print(self.src)
