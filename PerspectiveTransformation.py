@@ -11,14 +11,18 @@ class PerspectiveTransformation:
         M_inv (np.array): Matrix to transform image from top view to front view
     """
 
-    min_bot = 900
-    min_top = 500
     y_bottom = 720
-    y_top = 480
-    x_bot_left = 100
-    x_bot_right = 1180
-    x_top_left = 400
-    x_top_right = 880
+    y_top = 500
+
+    ORIGINAL_XBL = 80
+    ORIGINAL_XBR = 1180
+    ORIGINAL_XTL = 480
+    ORIGINAL_XTR = 850
+
+    x_bot_left = ORIGINAL_XBL
+    x_bot_right = ORIGINAL_XBR
+    x_top_left = ORIGINAL_XTL
+    x_top_right = ORIGINAL_XTR
 
     def __init__(self):
         """Init PerspectiveTransformation."""
@@ -52,11 +56,19 @@ class PerspectiveTransformation:
     def getXTopRight(self):
         return self.x_top_right
 
-    def reBox(self, XLB, XLT, XRB, XRT): # if we want to consider the lines positions
-        self.x_bot_left = XLB[0][0] - 20 if 0 <= XLB[0][0] - 20 else 0
-        self.x_bot_right = XRB[0][0] + 20 if XRB[0][0] + 20 <= 1280 else 1280
+    def reBox(self, XLB, XLT, XRB, XRT):  # if we want to consider the lines positions
+        self.x_bot_left = XLB[0][0] - 40 if 0 <= XLB[0][0] - 40 else 0
+        self.x_bot_right = XRB[0][0] + 40 if XRB[0][0] + 40 <= 1280 else 1280
         self.x_top_left = XLT[0][0] - 20 if 0 <= XLT[0][0] - 20 else 0
         self.x_top_right = XRT[0][0] + 20 if XRT[0][0] + 20 <= 1280 else 1280
+
+        if self.x_bot_right - self.x_bot_left <= self.x_top_right - self.x_top_left \
+                or self.x_top_right - self.x_top_left <= 200:
+
+            self.x_top_left = self.ORIGINAL_XTL
+            self.x_top_right = self.ORIGINAL_XTR
+            self.x_bot_left = self.ORIGINAL_XBL
+            self.x_bot_right = self.ORIGINAL_XBR
 
         self.src = np.float32([(self.x_top_left, self.y_top),  # top-left
                                (self.x_bot_left, self.y_bottom),  # bottom-left

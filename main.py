@@ -31,10 +31,10 @@ tr = (x_top_right, y_top)
 
 
 # read video from file
-#cap = cv2.VideoCapture('../video//20230317_151040.mp4')
+cap = cv2.VideoCapture('../video//20230317_151040.mp4')
 #cap = cv2.VideoCapture('../video//20230317_145749.mp4')
-cap = cv2.VideoCapture('../video//project_video.mp4')
-#cap = cv2.VideoCapture('../video//20230303_145434.mp4')
+#cap = cv2.VideoCapture('../video//project_video.mp4')
+#cap = cv2.VideoCapture('../video//20230303_145525 tagliato.mp4')
 
 video_fps = cap.get(cv2.CAP_PROP_FPS)
 total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -70,11 +70,11 @@ while (cap.isOpened()):
         debug = True
         final = True
         if debug:
-            x_bot_left = XLB[0][0] - 40 if 0 <= XLB[0][0] - 20 else 0
-            #print("x[0][0]:  " + str(XLB[0][0]) + " cubotto:" + str(x_bot_left))
-            x_bot_right = XRB[0][0] + 40 if XRB[0][0] + 20 <= 1280 else 1280
-            x_top_left = XLT[0][0] - 40 if 0 <= XLT[0][0] - 100 else 0
-            x_top_right = XRT[0][0] + 40 if XRT[0][0] + 100 <= 1280 else 1280
+            x_bot_left = XLB[0][0] - 40 if 0 <= XLB[0][0] - 40 else 0
+            x_bot_right = XRB[0][0] + 40 if XRB[0][0] + 40 <= 1280 else 1280
+            x_top_left = XLT[0][0] - 20 if 0 <= XLT[0][0] - 20 else 0
+            x_top_right = XRT[0][0] + 20 if XRT[0][0] + 20 <= 1280 else 1280
+
             bl = (int(x_bot_left), int(y_bottom))
             br = (int(x_bot_right), int(y_bottom))
             tl = (int(x_top_left), int(y_top))
@@ -97,6 +97,7 @@ while (cap.isOpened()):
 
         scale = 80
         if not final:
+            img = out_img
             height = int(img.shape[0] * scale / 100)
             width = int(img.shape[1] * scale / 100)
             dim = (width, height)
