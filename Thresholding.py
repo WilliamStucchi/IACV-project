@@ -36,8 +36,9 @@ class Thresholding:
         s_channel = hls[:, :, 2]
         v_channel = hsv[:, :, 2]
 
-        clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
+        clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(8, 8))
         l_channel = clahe.apply(l_channel)
+
 
         right_lane = threshold_rel(l_channel, 0.6, 1.0)
         left_lane = threshold_rel(l_channel, 0.6, 1.0)
@@ -60,6 +61,8 @@ class Thresholding:
         right_lane = cv2.erode(right_lane, kernel, iterations=1)"""
 
         img2 = left_lane | right_lane
+        """img2 = v_channel
+        print("V: " + str(np.mean(v_channel)))"""
 
         return img2
 

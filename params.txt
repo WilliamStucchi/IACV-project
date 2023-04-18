@@ -14,14 +14,15 @@ Nun s'ha da fa
 
 ---------------------------------
 20230303_145525 tagliato
+histogram clipLimit=3.0
 right_lane = threshold_rel(l_channel, 0.5, 1.0)
 left_lane = threshold_rel(l_channel, 0.7, 1.0)
 y_bottom = 720
 y_top = 480
-x_bot_left = 70
-x_bot_right = 1200
-x_top_left = 450
-x_top_right = 800
+ORIGINAL_XBL = 80
+ORIGINAL_XBR = 1180
+ORIGINAL_XTL = 480
+ORIGINAL_XTR = 850
 
 ---------------------------------
 20230317_145749_t.mp4
@@ -44,59 +45,3 @@ ORIGINAL_XBL = 80
 ORIGINAL_XBR = 1180
 ORIGINAL_XTL = 480
 ORIGINAL_XTR = 850
-
-
-    def forward(self, img):
-        """ Take an image and extract all relevant pixels.
-        Parameters:
-            img (np.array): Input image
-        Returns:
-            binary (np.array): A binary image represent all positions of relevant pixels.
-        """
-        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
-        hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        h_channel = hls[:, :, 0]
-        l_channel = hls[:, :, 1]
-        s_channel = hls[:, :, 2]
-        v_channel = hsv[:, :, 2]
-
-        right_lane = threshold_rel(l_channel, 0.6, 1.0)
-        right_lane[:, :640] = 0
-
-        #left_lane = threshold_abs(l_channel, 20, 75)
-        left_lane_l = threshold_rel(l_channel, 0.6, 1.0)
-        #left_lane_v = threshold_rel(v_channel, 0.6, 1)
-        left_lane_l[:, 640:] = 0
-        #left_lane_v[:, 600:] = 0
-
-        """if self.init:
-            self.non_zero_l = np.count_nonzero(left_lane_l)
-            self.non_zero_v = np.count_nonzero(left_lane_v)
-            self.init = False
-        """
-        #print(np.count_nonzero(left_lane_v))
-        #left_lane = left_lane_l & left_lane_v
-
-        """
-        if np.count_nonzero(left_lane_l) > 3 * self.non_zero_l:
-            left_lane = left_lane_v
-            print("v_channel good")
-        elif np.count_nonzero(left_lane_v) > 3 * self.non_zero_v:
-            left_lane = left_lane_l
-            print("l_channel good")
-        else:
-            if np.count_nonzero(left_lane_v) > np.count_nonzero(left_lane_l):
-                left_lane = left_lane_v
-                print("v_channel too much")
-            elif np.count_nonzero(left_lane_v) < np.count_nonzero(left_lane_l):
-                left_lane = left_lane_l
-                print("l_channel too much")
-            else:
-                left_lane = left_lane_v
-                print("v_channel enniende")
-        """
-
-        left_lane = left_lane_l
-        img2 = left_lane | right_lane
-
-        return img2

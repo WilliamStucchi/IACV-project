@@ -13,7 +13,6 @@ class PerspectiveTransformation:
 
     y_bottom = 720
     y_top = 500
-
     ORIGINAL_XBL = 80
     ORIGINAL_XBR = 1180
     ORIGINAL_XTL = 480
