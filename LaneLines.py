@@ -67,12 +67,12 @@ class LaneLines:
         self.dir = []
         self.left_curve_img = mpimg.imread('left_turn.png')
         self.right_curve_img = mpimg.imread('right_turn.png')
-        self.keep_straight_img = mpimg.imread('straight.png')
-        self.left_curve_img = cv2.normalize(src=self.left_curve_img, dst=None, alpha=0, beta=255,
+        self.straight_img = mpimg.imread('straight.png')
+        self.left_curve_img = cv2.normalize(src=self.left_curve_img, dst=None, alpha=0, beta=20,
                                             norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        self.right_curve_img = cv2.normalize(src=self.right_curve_img, dst=None, alpha=0, beta=255,
+        self.right_curve_img = cv2.normalize(src=self.right_curve_img, dst=None, alpha=0, beta=20,
                                              norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        self.keep_straight_img = cv2.normalize(src=self.keep_straight_img, dst=None, alpha=0, beta=255,
+        self.straight_img = cv2.normalize(src=self.straight_img, dst=None, alpha=0, beta=20,
                                                norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
         # HYPERPARAMETERS
@@ -94,7 +94,7 @@ class LaneLines:
         return self.fit_poly(img)
 
     def pixels_in_window(self, center, margin, height):
-        """ Return all pixel that in a specific window
+        """ Return all pixel that are in a specific window
         Parameters:
             center (tuple): coordinate of the center of the window
             margin (int): half width of the window
@@ -116,7 +116,7 @@ class LaneLines:
             img (np.array): A binary image
         """
         self.img = img
-        # Height of of windows - based on nwindows and image shape
+        # Height of windows - based on nwindows and image shape
         self.window_height = int(img.shape[0] // self.nwindows)
 
         # Identify the x and y positions of all nonzero pixel in the image
@@ -140,17 +140,18 @@ class LaneLines:
         # Create an output image to draw on and visualize the result
         out_img = np.dstack((img, img, img))
 
+        # select the starting point of the lines
         histogram = hist(img)
         midpoint = histogram.shape[0] // 2
         leftx_base = np.argmax(histogram[:midpoint])
         rightx_base = np.argmax(histogram[midpoint:]) + midpoint
 
-        # Current position to be update later for each window in nwindows
+        # Current position to be updated later for each window in nwindows
         leftx_current = leftx_base
         rightx_current = rightx_base
         y_current = img.shape[0] + self.window_height // 2
 
-        # Create empty lists to reveice left and right lane pixel
+        # Create empty lists to receive left and right lane pixel
         leftx, lefty, rightx, righty = [], [], [], []
 
         # Step through the windows one by one
@@ -206,23 +207,11 @@ class LaneLines:
         left_fitx = self.left_fit[0] * ploty ** 2 + self.left_fit[1] * ploty + self.left_fit[2]
         right_fitx = self.right_fit[0] * ploty ** 2 + self.right_fit[1] * ploty + self.right_fit[2]
 
-        """center = (int(right_fitx[0]), 0)
-        out_img = cv2.circle(out_img, center, 30, (0, 255, 0), 12)
-        center = (int(right_fitx[len(right_fitx) - 1]), 720)
-        out_img = cv2.circle(out_img, center, 30, (0, 255, 0), 12)
-        center = (int(left_fitx[0]), 0)
-        out_img = cv2.circle(out_img, center, 30, (0, 255, 0), 12)
-        center = (int(left_fitx[len(left_fitx) - 1]), 720)
-        out_img = cv2.circle(out_img, center, 10, (0, 255, 0), 12)"""
-
         # Visualization
         for i, y in enumerate(ploty):
             l = int(left_fitx[i])
             r = int(right_fitx[i])
             y = int(y)
-
-            """if i == 0:
-                print("l: " + str(l) + " r: " + str(r) + " y: " + str(y) + " len: " + str(len(left_fitx)))"""
 
             cv2.line(out_img, (l, y), (r, y), (255, 0, 0))
 
@@ -233,7 +222,7 @@ class LaneLines:
 
         return out_img
 
-    def plot(self, out_img):
+    def plot(self, out_img,  XLB, XLT, XRB, XRT):
         np.set_printoptions(precision=6, suppress=True)
         lR, rR, pos = self.measure_curvature()
 
@@ -253,54 +242,52 @@ class LaneLines:
         if len(self.dir) > 10:
             self.dir.pop(0)
 
-        W = 400
-        H = 500
+        W = 410
+        H = 80
         widget = np.copy(out_img[:H, :W])
         widget //= 2
-        widget[0, :] = [0, 0, 255]
-        widget[-1, :] = [0, 0, 255]
-        widget[:, 0] = [0, 0, 255]
-        widget[:, -1] = [0, 0, 255]
         out_img[:H, :W] = widget
+
+        y_bottom = XLB[0][1]
+        y_top = XLT[0][1]
+        XL = abs((XLT[0][0] - XLB[0][0]) // 2) + XLB[0][0]
+        XR = XRB[0][0] - abs((XRT[0][0] - XRB[0][0]) // 2)
+        TB = (y_bottom - y_top) // 2 + y_top # y coord of the beginning of the arrow img
+        LB = (XR - XL) // 2 + XL # x coord of the beginning of the arrow img
 
         direction = max(set(self.dir), key=self.dir.count)
         msg = "Keep Straight Ahead"
-        curvature_msg = "Curvature = {:.0f} m".format(min(lR, rR))
         if direction == 'L':
-            y, x = self.left_curve_img[:, :, 3].nonzero()
-            out_img[y, x - 100 + W // 2] = self.left_curve_img[y, x, :3]
+            y, x = self.left_curve_img[:, :, 2].nonzero()
+            v_shift = self.left_curve_img.shape[0] // 2  # vertical shift to center the img
+            h_shift = self.left_curve_img.shape[1] // 2  # horizontal shift to center the img
+            out_img[y + int(TB - v_shift), x + int(LB - h_shift)] = self.left_curve_img[y, x, :3]
             msg = "Left Curve Ahead"
+
         if direction == 'R':
-            y, x = self.right_curve_img[:, :, 3].nonzero()
-            out_img[y, x - 100 + W // 2] = self.right_curve_img[y, x, :3]
+            y, x = self.right_curve_img[:, :, 2].nonzero()
+            v_shift = self.right_curve_img.shape[0] // 2  # horizontal shift to center the img
+            h_shift = self.right_curve_img.shape[1] // 2  # horizontal shift to center the img
+            out_img[y + int(TB - v_shift), x + int(LB - h_shift)] = self.right_curve_img[y, x, :3]
             msg = "Right Curve Ahead"
+
         if direction == 'F':
-            y, x = self.keep_straight_img[:, :, 3].nonzero()
-            out_img[y, x - 100 + W // 2] = self.keep_straight_img[y, x, :3]
+            y, x = self.straight_img[:, :, 2].nonzero()
+            v_shift = self.straight_img.shape[0] // 2  # horizontal shift to center the img
+            h_shift = self.straight_img.shape[1] // 2  # horizontal shift to center the img
+            out_img[y + int(TB - v_shift), x + int(LB - h_shift)] = self.straight_img[y, x, :3]
 
-        cv2.putText(out_img, msg, org=(10, 240), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255),
-                    thickness=2)
-        if direction in 'LR':
-            cv2.putText(out_img, curvature_msg, org=(10, 280), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1,
-                        color=(255, 255, 255), thickness=2)
-
-        cv2.putText(
-            out_img,
-            "Good Lane Keeping",
-            org=(10, 400),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=1.2,
-            color=(0, 255, 0),
-            thickness=2)
+        cv2.putText(out_img, msg, org=(10, 60), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.6, color=(255, 255, 255),
+                    thickness=1)
 
         cv2.putText(
             out_img,
             "Vehicle is {:.2f} m away from center".format(pos),
-            org=(10, 450),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            org=(10, 25),
+            fontFace=cv2.FONT_HERSHEY_COMPLEX,
             fontScale=0.6,
             color=(255, 255, 255),
-            thickness=2)
+            thickness=1)
 
         return out_img
 
@@ -318,7 +305,9 @@ class LaneLines:
 
         xl = np.dot(self.left_fit, [700 ** 2, 700, 1])
         xr = np.dot(self.right_fit, [700 ** 2, 700, 1])
-        pos = (1280 // 2 - (xl + xr) // 2) * xm
+        car_position = 1280 // 2
+        lane_centre_position = (xl + xr) // 2
+        pos = (car_position - lane_centre_position) * xm
         self.setCarOffset(pos)
 
         return left_curveR, right_curveR, pos

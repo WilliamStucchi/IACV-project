@@ -6,8 +6,8 @@ from PerspectiveTransformation import *
 from LaneLines import *
 
 # initialization
-calibration = CameraCalibration("scacco.it", 7, 7, True)
-# calibration = CameraCalibration("chessboard_imgs", 8, 5)
+# calibration = CameraCalibration("scacco.it", 7, 7, True)
+calibration = CameraCalibration("chessboard_imgs", 8, 5, True)
 thresholding = Thresholding()
 transform = PerspectiveTransformation()
 lanelines = LaneLines()
@@ -30,9 +30,9 @@ tl = (x_top_left, y_top)
 tr = (x_top_right, y_top)
 
 # read video from file
-cap = cv2.VideoCapture('../video//20230317_151040.mp4')
+# cap = cv2.VideoCapture('../video//20230317_151040.mp4')
 # cap = cv2.VideoCapture('../video//20230317_145749.mp4')
-# cap = cv2.VideoCapture('../video//project_video.mp4')
+# cap = cv2.VideoCapture('../video//project_video.mp4') # ?
 # cap = cv2.VideoCapture('../video//20230303_145525 tagliato.mp4') # histogram clipLimit=3.0
 # cap = cv2.VideoCapture('../video//20230303_145747.mp4') # histogram clipLimit=3.0
 # cap = cv2.VideoCapture('../video//20230303_150354.mp4') # bad bad
@@ -63,13 +63,6 @@ count = 0
 
 # Read until video is completed
 while cap.isOpened():
-    """    if count % 2 == 0:
-        car_offset = 20
-    else:
-        car_offset = -20
-
-    count += 1
-    """
 
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -78,7 +71,7 @@ while cap.isOpened():
         img = cv2.resize(frame, (1280, 720))
         out_img = np.copy(img)
 
-        showROI = True
+        showROI = False
         computeROIvariations = True
 
         transform.reBox(XLB, XLT, XRB, XRT)
@@ -89,14 +82,13 @@ while cap.isOpened():
         img = thresholding.forward(img)
         img = lanelines.forward(img)
         img = transform.backward(img)
+        transform.reBox(XLB, XLT, XRB, XRT)
 
         scale = 80
         if not computeROIvariations:
             out_img = img
         else:
             out_img = cv2.addWeighted(out_img, 1, img, 0.6, 0)
-            out_img = lanelines.plot(out_img)
-            car_offset = lanelines.getCarOffset()
 
             XLT = lanelines.getXLTop()
             XLT = np.float32(np.array([[[XLT, 0]]]))
@@ -127,6 +119,9 @@ while cap.isOpened():
             center = (int(XRB[0][0]), y_bottom)
             out_img = cv2.circle(out_img, center, 10, (238, 175, 224), 12)"""
 
+            if 0 <= XLB[0][0] <= 1280  and 0 <= XLT[0][0] <= 1280 and 0 <= XRB[0][0] <= 1280 and 0 <= XRT[0][0] <= 1280:
+                out_img = lanelines.plot(out_img, XLB, XLT, XRB, XRT)
+
         if showROI:
             x_bot_left = XLB[0][0] - 40 if 0 <= XLB[0][0] - 40 else 0
             x_bot_right = XRB[0][0] + 40 if XRB[0][0] + 40 <= 1280 else 1280
@@ -138,10 +133,10 @@ while cap.isOpened():
             tl = (int(x_top_left), int(y_top))
             tr = (int(x_top_right), int(y_top))
 
-            cv2.line(out_img, bl, tl, (0, 0, 255), 8)  # bot-lef to top-lef
-            cv2.line(out_img, bl, br, (0, 0, 255), 8)  # bot-lef to bot-rig
-            cv2.line(out_img, br, tr, (0, 0, 255), 8)  # bot-rig to top-rig
-            cv2.line(out_img, tr, tl, (0, 0, 255), 8)  # top-rig to top-lef
+            cv2.line(out_img, bl, tl, (0, 0, 255), 4)  # bot-lef to top-lef
+            cv2.line(out_img, bl, br, (0, 0, 255), 4)  # bot-lef to bot-rig
+            cv2.line(out_img, br, tr, (0, 0, 255), 4)  # bot-rig to top-rig
+            cv2.line(out_img, tr, tl, (0, 0, 255), 4)  # top-rig to top-lef
 
         height = int(out_img.shape[0] * scale / 100)
         width = int(out_img.shape[1] * scale / 100)
@@ -150,7 +145,7 @@ while cap.isOpened():
 
         cv2.imshow('img', resized)
         # Press Q on keyboard to exit
-        # cv2.waitKey(00) == ord('k')
+        cv2.waitKey(00) == ord('k')
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
 

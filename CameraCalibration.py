@@ -34,6 +34,8 @@ class CameraCalibration():
                     imgpoints.append(corners)
                     objpoints.append(objp)
 
+
+
             shape = (img.shape[1], img.shape[0])
             ret, self.mtx, self.dist, _, _ = cv2.calibrateCamera(objpoints, imgpoints, shape, None, None)
             print(self.mtx)

@@ -62,8 +62,11 @@ class PerspectiveTransformation:
         self.x_top_right = XRT[0][0] + 20 if XRT[0][0] + 20 <= 1280 else 1280
 
         if self.x_bot_right - self.x_bot_left <= self.x_top_right - self.x_top_left \
-                or self.x_top_right - self.x_top_left <= 200:
+                or self.x_top_right - self.x_top_left <= 200 \
+                or self.x_top_left < self.x_bot_left \
+                or self.x_top_right > self.x_bot_right:
 
+            print("rebox")
             self.x_top_left = self.ORIGINAL_XTL
             self.x_top_right = self.ORIGINAL_XTR
             self.x_bot_left = self.ORIGINAL_XBL
