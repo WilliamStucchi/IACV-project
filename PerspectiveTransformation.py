@@ -66,7 +66,6 @@ class PerspectiveTransformation:
                 or self.x_top_left < self.x_bot_left \
                 or self.x_top_right > self.x_bot_right:
 
-            print("rebox")
             self.x_top_left = self.ORIGINAL_XTL
             self.x_top_right = self.ORIGINAL_XTR
             self.x_bot_left = self.ORIGINAL_XBL

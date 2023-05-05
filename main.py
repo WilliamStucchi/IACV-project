@@ -30,7 +30,7 @@ tl = (x_top_left, y_top)
 tr = (x_top_right, y_top)
 
 # read video from file
-# cap = cv2.VideoCapture('../video//20230317_151040.mp4')
+cap = cv2.VideoCapture('../video//20230317_151040.mp4')
 # cap = cv2.VideoCapture('../video//20230317_145749.mp4')
 # cap = cv2.VideoCapture('../video//project_video.mp4') # ?
 # cap = cv2.VideoCapture('../video//20230303_145525 tagliato.mp4') # histogram clipLimit=3.0
@@ -119,7 +119,7 @@ while cap.isOpened():
             center = (int(XRB[0][0]), y_bottom)
             out_img = cv2.circle(out_img, center, 10, (238, 175, 224), 12)"""
 
-            if 0 <= XLB[0][0] <= 1280  and 0 <= XLT[0][0] <= 1280 and 0 <= XRB[0][0] <= 1280 and 0 <= XRT[0][0] <= 1280:
+            if 0 <= XLB[0][0] <= 1280 and 0 <= XLT[0][0] <= 1280 and 0 <= XRB[0][0] <= 1280 and 0 <= XRT[0][0] <= 1280:
                 out_img = lanelines.plot(out_img, XLB, XLT, XRB, XRT)
 
         if showROI:
