@@ -20,9 +20,11 @@ class Thresholding:
     """ This class is for extracting relevant pixels in an image.
     """
 
-    init = True
-    non_zero_l = 0
-    non_zero_v = 0
+    clip_limit = 1.0
+    r_min_th = 0.6
+    r_max_th = 1.0
+    l_min_th = 0.6
+    l_max_th = 1.0
 
     def __init__(self):
         """ Init Thresholding."""
@@ -34,11 +36,11 @@ class Thresholding:
 
         l_channel = hls[:, :, 1]
 
-        clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(8, 8))
+        clahe = cv2.createCLAHE(clipLimit=self.clip_limit, tileGridSize=(8, 8))
         l_channel = clahe.apply(l_channel)
 
-        right_lane = threshold_rel(l_channel, 0.6, 1.0)
-        left_lane = threshold_rel(l_channel, 0.6, 1.0)
+        right_lane = threshold_rel(l_channel, self.r_min_th, self.r_max_th)
+        left_lane = threshold_rel(l_channel, self.l_min_th, self.l_max_th)
 
         right_lane[:, :690] = 0
         left_lane[:, 590:] = 0

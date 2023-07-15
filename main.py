@@ -1,9 +1,20 @@
 import cap as cap
 import cv2
+import sys
 from CameraCalibration import CameraCalibration
 from Thresholding import *
 from PerspectiveTransformation import *
 from LaneLines import *
+
+showROI = False
+video_path = ''
+if len(sys.argv) == 2:
+    video_path = sys.argv[1]
+elif len(sys.argv) == 3:
+    if sys.argv[1] == '-d':
+        showROI = True
+
+    video_path = sys.argv[2]
 
 # initialization
 # calibration = CameraCalibration("scacco.it", 7, 7, True)
@@ -30,22 +41,7 @@ tl = (x_top_left, y_top)
 tr = (x_top_right, y_top)
 
 # read video from file
-cap = cv2.VideoCapture('../video//20230317_151040.mp4')
-# cap = cv2.VideoCapture('../video//20230317_145749.mp4')
-# cap = cv2.VideoCapture('../video//project_video.mp4') # ?
-# cap = cv2.VideoCapture('../video//20230303_145525 tagliato.mp4') # histogram clipLimit=3.0
-# cap = cv2.VideoCapture('../video//20230303_145747.mp4') # histogram clipLimit=3.0
-# cap = cv2.VideoCapture('../video//20230303_150354.mp4') # bad bad
-# cap = cv2.VideoCapture('../video//20230303_151659.mp4') # no good
-# cap = cv2.VideoCapture('../video//20230303_151722.mp4') # histogram clipLimit=2.0
-# cap = cv2.VideoCapture('../video//20230303_152000 tagliato.mp4')
-# cap = cv2.VideoCapture('../video//20230317_145721.mp4') # nah
-# cap = cv2.VideoCapture('../video//20230317_145830.mp4') # nope
-# cap = cv2.VideoCapture('../video//20230317_145931.mp4') # nope
-# cap = cv2.VideoCapture('../video//20230317_150400.mp4') # nah
-# cap = cv2.VideoCapture('../video//20230317_150849.mp4')
-# cap = cv2.VideoCapture('../video//20230317_151002.mp4') # ni
-# cap = cv2.VideoCapture('../video//20230317_152054.mp4') # no
+cap = cv2.VideoCapture('../video//' + video_path)
 
 video_fps = cap.get(cv2.CAP_PROP_FPS)
 total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -59,8 +55,6 @@ new_height = height / 2
 if not cap.isOpened():
     print("Error opening video file")
 
-count = 0
-
 # Read until video is completed
 while cap.isOpened():
 
@@ -71,7 +65,6 @@ while cap.isOpened():
         img = cv2.resize(frame, (1280, 720))
         out_img = np.copy(img)
 
-        showROI = False
         computeROIvariations = True
 
         transform.reBox(XLB, XLT, XRB, XRT)
@@ -92,32 +85,19 @@ while cap.isOpened():
 
             XLT = lanelines.getXLTop()
             XLT = np.float32(np.array([[[XLT, 0]]]))
-            # print(XLT)
             XLT = cv2.perspectiveTransform(XLT, M_inv)[0]
-            """#print("warp: " + str(XLT))
-            center = (int(XLT[0][0]), y_top)
-            out_img = cv2.circle(out_img, center, 20, (238, 175, 224), 12)"""
 
             XLB = lanelines.getXLBot()
             XLB = np.float32(np.array([[[XLB, 720]]]))
             XLB = cv2.perspectiveTransform(XLB, M_inv)[0]
-            """#print("warp: " + str(XLB))
-            center = (int(XLB[0][0]), y_bottom)
-            out_img = cv2.circle(out_img, center, 15, (238, 175, 224), 12)"""
 
             XRT = lanelines.getXRTop()
             XRT = np.float32(np.array([[[XRT, 0]]]))
             XRT = cv2.perspectiveTransform(XRT, M_inv)[0]
-            """#print("warp: " + str(XRT))
-            center = (int(XRT[0][0]), y_top)
-            out_img = cv2.circle(out_img, center, 5, (238, 175, 224), 12)"""
 
             XRB = lanelines.getXRBot()
             XRB = np.float32(np.array([[[XRB, 720]]]))
             XRB = cv2.perspectiveTransform(XRB, M_inv)[0]
-            """#print("warp: " + str(XRB))
-            center = (int(XRB[0][0]), y_bottom)
-            out_img = cv2.circle(out_img, center, 10, (238, 175, 224), 12)"""
 
             if 0 <= XLB[0][0] <= 1280 and 0 <= XLT[0][0] <= 1280 and 0 <= XRB[0][0] <= 1280 and 0 <= XRT[0][0] <= 1280:
                 out_img = lanelines.plot(out_img, XLB, XLT, XRB, XRT)
@@ -145,7 +125,7 @@ while cap.isOpened():
 
         cv2.imshow('img', resized)
         # Press Q on keyboard to exit
-        cv2.waitKey(00) == ord('k')
+        # cv2.waitKey(00) == ord('k')
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
 
